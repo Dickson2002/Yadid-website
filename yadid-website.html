@@ -1,0 +1,604 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Vault — Poetry</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Serif+Display:ital@0;1&family=Jost:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --sage: #9CAF88;
+      --sage-light: #C8D9BC;
+      --sage-pale: #EDF2E8;
+      --sage-dark: #6B8A5A;
+      --ink: #1E2219;
+      --warm-white: #F8F6F1;
+      --sand: #E8E0D0;
+      --muted: #7A7A6E;
+    }
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+    body { font-family: 'Jost', sans-serif; background: var(--warm-white); color: var(--ink); overflow-x: hidden; }
+
+    /* NAV */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 1.4rem 4rem;
+      background: rgba(248,246,241,0.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid rgba(156,175,136,0.25);
+    }
+    .nav-logo { font-family: 'DM Serif Display', serif; font-size: 1.6rem; letter-spacing: 0.12em; color: var(--ink); text-decoration: none; }
+    .nav-logo span { color: var(--sage-dark); }
+    .nav-links { display: flex; gap: 2.8rem; list-style: none; }
+    .nav-links a { font-family: 'Jost', sans-serif; font-weight: 300; font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--ink); text-decoration: none; transition: color 0.3s; }
+    .nav-links a:hover { color: var(--sage-dark); }
+
+    /* HERO */
+    .hero { min-height: 100vh; display: grid; grid-template-columns: 1fr 1fr; position: relative; overflow: hidden; }
+    .hero-left {
+      background: var(--sage);
+      display: flex; flex-direction: column; justify-content: flex-end;
+      padding: 8rem 5rem 6rem;
+      position: relative;
+    }
+    .hero-left::before {
+      content: ''; position: absolute; inset: 0;
+      background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .hero-eyebrow { font-weight: 300; font-size: 0.72rem; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(255,255,255,0.75); margin-bottom: 2rem; animation: fadeUp 1s ease both; }
+    .hero-title { font-family: 'DM Serif Display', serif; font-size: clamp(3.5rem, 6vw, 6.5rem); line-height: 1.05; color: #fff; animation: fadeUp 1s 0.15s ease both; }
+    .hero-title em { font-style: italic; color: rgba(255,255,255,0.7); }
+    .hero-sub { margin-top: 2rem; font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; font-style: italic; color: rgba(255,255,255,0.82); max-width: 340px; line-height: 1.7; animation: fadeUp 1s 0.3s ease both; }
+    .hero-cta { margin-top: 3rem; display: inline-block; padding: 0.9rem 2.4rem; border: 1.5px solid rgba(255,255,255,0.7); color: #fff; text-decoration: none; font-size: 0.75rem; letter-spacing: 0.25em; text-transform: uppercase; font-weight: 400; transition: background 0.3s, color 0.3s; animation: fadeUp 1s 0.45s ease both; }
+    .hero-cta:hover { background: #fff; color: var(--sage-dark); }
+    .hero-right { background: var(--warm-white); display: flex; flex-direction: column; justify-content: center; padding: 8rem 5rem 6rem 4rem; position: relative; }
+    .hero-right::after { content: '\201C'; position: absolute; top: 4rem; right: 3rem; font-family: 'DM Serif Display', serif; font-size: 18rem; color: var(--sage-pale); line-height: 1; pointer-events: none; }
+    .featured-label { font-size: 0.68rem; letter-spacing: 0.3em; text-transform: uppercase; color: var(--sage-dark); font-weight: 500; margin-bottom: 2.5rem; }
+    .featured-poem-title { font-family: 'DM Serif Display', serif; font-size: clamp(2rem, 3.5vw, 3.2rem); line-height: 1.15; color: var(--ink); margin-bottom: 0.5rem; animation: fadeUp 1s 0.2s ease both; }
+    .featured-poem-author { font-family: 'Cormorant Garamond', serif; font-size: 1rem; font-style: italic; color: var(--muted); margin-bottom: 2.5rem; }
+    .featured-excerpt { font-family: 'Cormorant Garamond', serif; font-size: 1.35rem; line-height: 2; color: #3A3A30; position: relative; z-index: 1; animation: fadeUp 1s 0.35s ease both; }
+    .featured-excerpt .line { display: block; }
+    .read-link { display: inline-flex; align-items: center; gap: 0.6rem; margin-top: 2.5rem; color: var(--sage-dark); text-decoration: none; font-size: 0.78rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; transition: gap 0.3s; cursor: pointer; }
+    .read-link:hover { gap: 1rem; }
+    .read-link::after { content: '\2192'; font-size: 1rem; }
+
+    /* DIVIDER */
+    .section-divider { height: 1px; background: linear-gradient(to right, transparent, var(--sage-light), transparent); margin: 0 4rem; }
+
+    /* POEMS GRID */
+    .poems-section { padding: 7rem 4rem; }
+    .section-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 4rem; }
+    .section-title { font-family: 'DM Serif Display', serif; font-size: 2.4rem; color: var(--ink); }
+    .section-title em { font-style: italic; color: var(--sage-dark); }
+    .section-link { font-size: 0.72rem; letter-spacing: 0.22em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: color 0.3s; }
+    .section-link:hover { color: var(--sage-dark); }
+    .poems-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+    .poem-card { background: var(--warm-white); border: 1px solid var(--sand); cursor: pointer; transition: background 0.4s, transform 0.4s; position: relative; overflow: hidden; display: flex; flex-direction: column; }
+    .poem-card-img { width: 100%; height: 220px; object-fit: cover; display: block; filter: saturate(0.75) brightness(0.92); transition: filter 0.5s, transform 0.6s; background: linear-gradient(135deg, var(--sage) 0%, var(--sage-dark) 100%); }
+    .poem-card:hover .poem-card-img { filter: saturate(0.9) brightness(1); transform: scale(1.03); }
+    .poem-card-img-wrap { overflow: hidden; position: relative; flex-shrink: 0; }
+    .poem-card-img-wrap::after { content: ''; position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 50%, rgba(30,34,25,0.18) 100%); pointer-events: none; }
+    .poem-card-body { padding: 2.5rem 2.8rem 3rem; flex: 1; }
+    .poem-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--sage); transform: scaleY(0); transform-origin: bottom; transition: transform 0.4s ease; }
+    .poem-card:hover::before { transform: scaleY(1); }
+    .poem-card:hover { background: var(--sage-pale); transform: translateY(-3px); }
+    .poem-number { font-size: 0.68rem; letter-spacing: 0.3em; color: var(--sage-dark); font-weight: 500; margin-bottom: 2rem; }
+    .poem-card-title { font-family: 'DM Serif Display', serif; font-size: 1.6rem; line-height: 1.2; color: var(--ink); margin-bottom: 0.5rem; }
+    .poem-card-author { font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 0.95rem; color: var(--muted); margin-bottom: 2rem; }
+    .poem-preview { font-family: 'Cormorant Garamond', serif; font-size: 1.1rem; line-height: 1.9; color: #555; }
+    .poem-tag { display: inline-block; margin-top: 2rem; padding: 0.3rem 0.9rem; background: var(--sage-pale); color: var(--sage-dark); font-size: 0.65rem; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 500; }
+
+    /* VIDEO SECTION */
+    .video-section { background: var(--ink); padding: 8rem 4rem; position: relative; overflow: hidden; }
+    .video-section::before { content: 'FILMS'; position: absolute; right: -2rem; top: 50%; transform: translateY(-50%) rotate(90deg); font-family: 'DM Serif Display', serif; font-size: 12rem; color: rgba(156,175,136,0.05); pointer-events: none; white-space: nowrap; }
+    .video-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 2px; margin-top: 4rem; }
+    .video-featured { position: relative; aspect-ratio: 16/9; background: var(--sage-dark); overflow: hidden; cursor: pointer; }
+    .video-featured-bg { width: 100%; height: 100%; background: linear-gradient(135deg, #3D5A2E 0%, #6B8A5A 50%, #9CAF88 100%); display: flex; align-items: center; justify-content: center; transition: transform 0.6s ease; }
+    .video-featured:hover .video-featured-bg { transform: scale(1.04); }
+    .play-btn { width: 70px; height: 70px; border: 2px solid rgba(255,255,255,0.8); border-radius: 50%; display: flex; align-items: center; justify-content: center; transition: background 0.3s, transform 0.3s; }
+    .play-btn::after { content: ''; border-top: 11px solid transparent; border-bottom: 11px solid transparent; border-left: 18px solid rgba(255,255,255,0.9); margin-left: 4px; }
+    .video-featured:hover .play-btn { background: rgba(255,255,255,0.2); transform: scale(1.08); }
+    .video-info { position: absolute; bottom: 0; left: 0; right: 0; padding: 2.5rem; background: linear-gradient(transparent, rgba(0,0,0,0.7)); }
+    .video-title { font-family: 'DM Serif Display', serif; font-size: 1.8rem; color: #fff; line-height: 1.2; margin-bottom: 0.4rem; }
+    .video-meta { font-size: 0.72rem; letter-spacing: 0.2em; color: rgba(255,255,255,0.6); text-transform: uppercase; }
+    .video-list { display: flex; flex-direction: column; gap: 2px; }
+    .video-item { background: #2A2E25; padding: 2rem; cursor: pointer; display: flex; gap: 1.2rem; align-items: center; transition: background 0.3s; flex: 1; }
+    .video-item:hover { background: #353C2D; }
+    .video-thumb { width: 70px; height: 50px; background: var(--sage-dark); flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+    .mini-play::after { content: ''; border-top: 7px solid transparent; border-bottom: 7px solid transparent; border-left: 11px solid rgba(255,255,255,0.8); margin-left: 3px; }
+    .video-item-title { font-family: 'DM Serif Display', serif; font-size: 1.05rem; color: rgba(255,255,255,0.88); line-height: 1.3; margin-bottom: 0.3rem; }
+    .video-item-duration { font-size: 0.68rem; letter-spacing: 0.18em; color: var(--sage-light); text-transform: uppercase; }
+
+    /* QUOTE BAND */
+    .quote-band { background: var(--sage-pale); padding: 6rem 4rem; text-align: center; border-top: 1px solid var(--sage-light); border-bottom: 1px solid var(--sage-light); }
+    .quote-text { font-family: 'Cormorant Garamond', serif; font-size: clamp(1.8rem, 3vw, 2.8rem); font-style: italic; color: var(--ink); max-width: 760px; margin: 0 auto; line-height: 1.6; }
+    .quote-attr { margin-top: 2rem; font-size: 0.72rem; letter-spacing: 0.3em; color: var(--muted); text-transform: uppercase; }
+
+    /* ABOUT */
+    .about-section { display: grid; grid-template-columns: 1fr 1fr; min-height: 70vh; }
+    .about-left { background: var(--sage); padding: 7rem 5rem; display: flex; flex-direction: column; justify-content: center; }
+    .about-label { font-size: 0.68rem; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(255,255,255,0.7); margin-bottom: 2rem; font-weight: 500; }
+    .about-title { font-family: 'DM Serif Display', serif; font-size: clamp(2.5rem, 4vw, 4rem); color: #fff; line-height: 1.1; margin-bottom: 1.5rem; }
+    .about-title em { font-style: italic; opacity: 0.75; }
+    .about-body { font-family: 'Cormorant Garamond', serif; font-size: 1.2rem; color: rgba(255,255,255,0.88); line-height: 1.9; max-width: 380px; }
+    .about-right { background: var(--warm-white); padding: 7rem 5rem; display: flex; flex-direction: column; justify-content: center; }
+    .stat-row { display: grid; grid-template-columns: 1fr 1fr; gap: 3rem 2rem; margin-bottom: 4rem; }
+    .stat-num { font-family: 'DM Serif Display', serif; font-size: 3rem; color: var(--sage-dark); line-height: 1; margin-bottom: 0.4rem; }
+    .stat-label { font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; color: var(--muted); }
+    .subscribe-form { display: flex; border: 1px solid var(--sand); }
+    .subscribe-input { flex: 1; padding: 0.9rem 1.2rem; border: none; background: var(--sage-pale); font-family: 'Jost', sans-serif; font-size: 0.85rem; color: var(--ink); outline: none; }
+    .subscribe-input::placeholder { color: var(--muted); }
+    .subscribe-btn { padding: 0.9rem 1.8rem; background: var(--sage-dark); color: #fff; border: none; font-family: 'Jost', sans-serif; font-size: 0.72rem; letter-spacing: 0.2em; text-transform: uppercase; cursor: pointer; transition: background 0.3s; }
+    .subscribe-btn:hover { background: var(--ink); }
+
+    /* FOOTER */
+    footer { background: var(--ink); padding: 4rem 4rem 2.5rem; display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 2rem; }
+    .footer-logo { font-family: 'DM Serif Display', serif; font-size: 2.5rem; color: var(--sage-light); letter-spacing: 0.1em; }
+    .footer-copy { font-size: 0.72rem; letter-spacing: 0.15em; color: rgba(255,255,255,0.3); }
+    .footer-links { display: flex; gap: 2rem; list-style: none; }
+    .footer-links a { font-size: 0.72rem; letter-spacing: 0.18em; text-transform: uppercase; color: rgba(255,255,255,0.45); text-decoration: none; transition: color 0.3s; }
+    .footer-links a:hover { color: var(--sage-light); }
+
+    /* MODAL */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(20,24,18,0.85); backdrop-filter: blur(8px); z-index: 200; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.4s; }
+    .modal-overlay.active { opacity: 1; pointer-events: all; }
+    .modal-box { background: var(--warm-white); max-width: 600px; width: 90%; max-height: 88vh; overflow-y: auto; padding: 5rem 4.5rem; position: relative; transform: translateY(30px); transition: transform 0.4s; }
+    .modal-overlay.active .modal-box { transform: translateY(0); }
+    .modal-close { position: absolute; top: 2rem; right: 2rem; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1; }
+    .modal-label { font-size: 0.65rem; letter-spacing: 0.35em; text-transform: uppercase; color: var(--sage-dark); margin-bottom: 1.5rem; }
+    .modal-title { font-family: 'DM Serif Display', serif; font-size: 2.4rem; line-height: 1.15; color: var(--ink); margin-bottom: 0.5rem; }
+    .modal-author { font-family: 'Cormorant Garamond', serif; font-style: italic; color: var(--muted); font-size: 1rem; margin-bottom: 3rem; padding-bottom: 2rem; border-bottom: 1px solid var(--sand); }
+    .modal-poem { font-family: 'Cormorant Garamond', serif; font-size: 1.25rem; line-height: 2.1; color: #333; white-space: pre-line; font-style: normal; }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(22px); } to { opacity: 1; transform: translateY(0); } }
+    .reveal { opacity: 0; transform: translateY(28px); transition: opacity 0.7s ease, transform 0.7s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+
+    /* CONTACT */
+    .contact-section {
+      background: var(--warm-white);
+      padding: 7rem 4rem;
+      border-top: 1px solid var(--sand);
+    }
+    .contact-inner {
+      max-width: 860px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 5rem;
+      align-items: center;
+    }
+    .contact-left .section-title { margin-bottom: 1rem; }
+    .contact-tagline {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.2rem;
+      font-style: italic;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 2.5rem;
+    }
+    .contact-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+    .contact-btn {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.6rem;
+      text-decoration: none;
+      font-family: 'Jost', sans-serif;
+      font-size: 0.82rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      font-weight: 400;
+      transition: all 0.3s;
+      border: 1.5px solid;
+    }
+    .contact-btn-whatsapp { display: none; }
+    .contact-btn-email {
+      background: transparent;
+      border-color: var(--ink);
+      color: var(--ink);
+    }
+    .contact-btn-email:hover { background: var(--ink); color: var(--warm-white); }
+    .contact-btn-phone { display: none; }
+    .contact-btn-icon {
+      width: 20px; height: 20px;
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .contact-right {
+      background: var(--sage);
+      padding: 3.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+    .contact-right::before {
+      content: '\2709';
+      position: absolute; bottom: -1rem; right: 1rem;
+      font-size: 9rem;
+      color: rgba(255,255,255,0.12);
+      pointer-events: none;
+    }
+    .contact-detail-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.32em;
+      text-transform: uppercase;
+      color: rgba(255,255,255,0.65);
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+    }
+    .contact-detail-value {
+      font-family: 'DM Serif Display', serif;
+      font-size: 1.2rem;
+      color: #fff;
+      margin-bottom: 2rem;
+    }
+    .contact-detail-value a { color: #fff; text-decoration: none; }
+    .contact-detail-value a:hover { text-decoration: underline; }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      nav { padding: 1.2rem 2rem; }
+      .nav-links { display: none; }
+      .hero, .about-section { grid-template-columns: 1fr; }
+      .hero-left, .hero-right { padding: 5rem 2.5rem 4rem; }
+      .hero-right::after { display: none; }
+      .poems-section { padding: 5rem 2rem; }
+      .poems-grid { grid-template-columns: 1fr; }
+      .video-section { padding: 5rem 2rem; }
+      .video-grid { grid-template-columns: 1fr; }
+      .video-list { display: none; }
+      .about-left, .about-right { padding: 5rem 2.5rem; }
+      footer { padding: 3rem 2rem 2rem; }
+      .modal-box { padding: 3rem 2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="#" class="nav-logo">V<span>ault</span></a>
+  <ul class="nav-links">
+    <li><a href="#poems">Poetry</a></li>
+    <li><a href="#videos">Films</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#subscribe">Subscribe</a></li>
+    <li><a href="#contact">Contact</a></li>
+</nav>
+
+<section class="hero">
+  <div class="hero-left">
+    <p class="hero-eyebrow">A poet's living archive</p>
+    <h1 class="hero-title">Words<br>that<br><em>stay.</em></h1>
+    <p class="hero-sub">A quiet space for poetry that lingers — where language finds its breath and meaning finds its home.</p>
+    <a href="#poems" class="hero-cta">Read the Collection</a>
+  </div>
+  <div class="hero-right">
+    <p class="featured-label">Latest Poem</p>
+    <h2 class="featured-poem-title">In Quiet Words</h2>
+    <p class="featured-poem-author">— From the Vault</p>
+    <div class="featured-excerpt">
+      <span class="line">In quiet words,</span>
+      <span class="line">emotions bloom.</span>
+      <span class="line">Every poem a story,</span>
+      <span class="line">every line a heartbeat.</span>
+    </div>
+    <span class="read-link" onclick="openModal(0)">Read full poem</span>
+  </div>
+</section>
+
+<div class="section-divider"></div>
+
+<section class="poems-section" id="poems">
+  <div class="section-header reveal">
+    <h2 class="section-title">The <em>Collection</em></h2>
+    <a href="#" class="section-link">All Poems &rarr;</a>
+  </div>
+  <div class="poems-grid" id="poems-grid"></div>
+</section>
+
+<div class="quote-band reveal">
+  <p class="quote-text">"Poetry is the spontaneous overflow of powerful feelings: it takes its origin from emotion recollected in tranquility."</p>
+  <p class="quote-attr">— William Wordsworth</p>
+</div>
+
+<section class="video-section" id="videos">
+  <div class="section-header reveal">
+    <h2 class="section-title" style="color:var(--warm-white)">Poem <em style="color:var(--sage-light)">Films</em></h2>
+    <a href="#" class="section-link" style="color:rgba(255,255,255,0.4)">All Films &rarr;</a>
+  </div>
+  <div class="video-grid reveal">
+    <div class="video-featured" style="aspect-ratio:16/9; position:relative; overflow:hidden; background:#0a0a08;">
+      <video
+        id="flames-video"
+        style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;"
+        autoplay
+        loop
+        muted
+        playsinline
+      >
+        <source src="https://cdn.pixabay.com/video/2020/03/04/33072-395882268_medium.mp4" type="video/mp4" />
+        <source src="https://cdn.pixabay.com/video/2024/04/15/207899_medium.mp4" type="video/mp4" />
+        <source src="https://cdn.pixabay.com/video/2023/09/17/180953_medium.mp4" type="video/mp4" />
+      </video>
+      <div style="position:absolute;inset:0;background:linear-gradient(to top, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.15) 55%, transparent 100%);pointer-events:none;"></div>
+      <div class="video-info">
+        <h3 class="video-title">Flames &amp; Embers</h3>
+        <p class="video-meta">Poem Film &middot; @Jeddie &middot; 30 sec</p>
+      </div>
+    </div>
+    <div class="video-list">
+      <div class="video-item">
+        <div class="video-thumb"><div class="mini-play"></div></div>
+        <div><p class="video-item-title">Flames & Embers</p><p class="video-item-duration">2 min &middot; Reading</p></div>
+      </div>
+      <div class="video-item">
+        <div class="video-thumb" style="background:#3D5A2E"><div class="mini-play"></div></div>
+        <div><p class="video-item-title">On Forgetting</p><p class="video-item-duration">4 min 10 sec &middot; Film</p></div>
+      </div>
+      <div class="video-item">
+        <div class="video-thumb" style="background:#5A7A49"><div class="mini-play"></div></div>
+        <div><p class="video-item-title">Root &amp; Wing</p><p class="video-item-duration">3 min &middot; Reading</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="about-section" id="about">
+  <div class="about-left">
+    <p class="about-label">The Vault</p>
+    <h2 class="about-title">A living<br><em>archive</em><br>of the soul.</h2>
+    <p class="about-body">Vault is a personal poetry space — a place to hold what words can hold, and release what only silence can carry. Each poem is an entry. Each reader, a witness.</p>
+  </div>
+  <div class="about-right" id="subscribe">
+    <div class="stat-row reveal">
+      <div><p class="stat-num">47</p><p class="stat-label">Poems Published</p></div>
+      <div><p class="stat-num">12</p><p class="stat-label">Poem Films</p></div>
+      <div><p class="stat-num">&infin;</p><p class="stat-label">Things Left Unsaid</p></div>
+      <div><p class="stat-num">1</p><p class="stat-label">Voice Behind It All</p></div>
+    </div>
+    <p style="font-family:'Cormorant Garamond',serif; font-size:1.1rem; color:var(--muted); margin-bottom:1.5rem; font-style:italic;">New poems, straight to your inbox. No noise.</p>
+    <div class="subscribe-form">
+      <input class="subscribe-input" type="email" placeholder="your@email.com" />
+      <button class="subscribe-btn">Subscribe</button>
+    </div>
+  </div>
+</section>
+
+<!-- CONTACT -->
+<section class="contact-section" id="contact">
+  <div class="contact-inner">
+    <div class="contact-left reveal">
+      <h2 class="section-title">Get in <em>Touch</em></h2>
+      <p class="contact-tagline">Every poem begins with a conversation. Reach out — for collaborations, readings, or just to share what a line meant to you.</p>
+      <div class="contact-buttons">
+        <a href="https://wa.me/254785301712" target="_blank" class="contact-btn contact-btn-whatsapp">
+          <span class="contact-btn-icon">
+            <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+          </span>
+          WhatsApp — 0785 301 712
+        </a>
+        <a href="mailto:mbithejeddie@gmail.com" class="contact-btn contact-btn-email">
+          <span class="contact-btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+          </span>
+          mbithejeddie@gmail.com
+        </a>
+        <a href="tel:+254785301712" class="contact-btn contact-btn-phone">
+          <span class="contact-btn-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" width="18" height="18"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 10.8a19.79 19.79 0 01-3.07-8.68A2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/></svg>
+          </span>
+          Call — 0785 301 712
+        </a>
+      </div>
+    </div>
+    <div class="contact-right reveal">
+      <p class="contact-detail-label">Email</p>
+      <p class="contact-detail-value"><a href="mailto:mbithejeddie@gmail.com">mbithejeddie@gmail.com</a></p>
+      <p class="contact-detail-label">Send a Message</p>
+      <p class="contact-detail-value" style="font-size:1rem; opacity:0.8; font-family:'Cormorant Garamond',serif; font-style:italic; line-height:1.6;">Whether it's a word about a poem, a collaboration, or simply to say something resonated — the inbox is always open.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="footer-logo">Vault</div>
+  <ul class="footer-links">
+    <li><a href="#poems">Poetry</a></li>
+    <li><a href="#videos">Films</a></li>
+    <li><a href="#about">About</a></li>
+    <li><a href="#contact">Contact</a></li>
+  <p class="footer-copy">&copy; 2026 Vault. All words reserved.</p>
+</footer>
+
+<div class="modal-overlay" id="modal" onclick="closeModalOutside(event)">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <p class="modal-label">Poem</p>
+    <h2 class="modal-title" id="modal-title"></h2>
+    <p class="modal-author" id="modal-author"></p>
+    <pre class="modal-poem" id="modal-poem"></pre>
+  </div>
+</div>
+
+<script>
+  const poems = [
+    { num:"001", title:"In Quiet Words", author:"From the Vault", tag:"Emotion",
+      img:"https://images.unsplash.com/photo-1455390582262-044cdead277a?w=800&q=80&auto=format&fit=crop",
+      imgAlt:"Fountain pen writing on paper close up",
+      preview:"In quiet words,\nemotions bloom.",
+      full:`In quiet words,
+emotions bloom.
+
+Every poem a story,
+every line a heartbeat.` },
+    { num:"002", title:"Flames & Embers", author:"@Jeddie", tag:"Life",
+      img:"https://images.unsplash.com/photo-1471107340929-a87cd0f5b5f3?w=800&q=80&auto=format&fit=crop",
+      imgAlt:"Woman writing in notebook on grass sunny outdoor",
+      preview:"We don't go looking for thorns;\ninstead, we find them on the stems of the rose.",
+      full:`We don't go looking for thorns;
+instead, we find them on the stems of the rose as we pluck.
+
+We don't go looking for hailstones;
+instead, they hit us as we dance in the rain.
+
+We don't go looking for gunshot wounds;
+instead, we go to the battlefield with victory as our driving force.
+
+We don't go looking for half the things we come out of life with —
+we just go, hoping that what we find
+is what we left our front doors for.
+
+— Flames & Embers ~ @Jeddie` },
+    { num:"003", title:"On Forgetting", author:"From the Vault", tag:"Memory",
+      img:"https://images.unsplash.com/photo-1516912481808-3406841bd33c?w=800&q=80&auto=format&fit=crop",
+      imgAlt:"Misty dark forest tall trees fog atmospheric memory",
+      preview:"The mind is merciful\nin ways we don't deserve—",
+      full:`The mind is merciful
+in ways we don't deserve—
+
+it softens the sharp corners,
+lets the loudest grief
+become a hum,
+then quiet,
+then a room you rarely enter.
+
+You are somewhere in that room.
+I go there less now.
+Not because you meant less—
+but because I've learned
+that love does not require suffering
+to prove itself true.` },
+    { num:"004", title:"Root & Wing", author:"From the Vault", tag:"Identity",
+      img:"https://images.unsplash.com/photo-1502082553048-f009c37129b9?w=800&q=80&auto=format&fit=crop",
+      imgAlt:"Sunlight through tall forest trees roots and sky",
+      preview:"To be rooted is not\nto be trapped—",
+      full:`To be rooted is not
+to be trapped—
+
+the baobab knows this,
+standing centuries in red earth,
+arms wide open,
+a cathedral of patience.
+
+And even it dreams
+of the season's turning,
+the soft migration
+of its own scattered seed.
+
+I am both root and wing—
+the staying and the going,
+the holding and the release.
+I have learned to honor both.` },
+    { num:"005", title:"Tenderness", author:"From the Vault", tag:"Love",
+      img:"https://images.unsplash.com/photo-1544787219-7f47ccb76574?w=800&q=80&auto=format&fit=crop",
+      imgAlt:"Tea cup white daisies flowers open books flat lay poetry",
+      preview:"It isn't grand things\nthat undo me—",
+      full:`It isn't grand things
+that undo me—
+
+not the sweeping gesture,
+not the eloquent declaration
+worn smooth by too much use.
+
+It is the small tenderness:
+the way you set my cup
+before I ask,
+the pause before you speak
+because the words matter to you.
+
+These are the things
+I will carry
+long after the loud love
+has said its last word.` },
+    { num:"006", title:"Inheritance", author:"From the Vault", tag:"Heritage",
+      img:"https://images.unsplash.com/photo-1535905557558-afc4877a26fc?w=800&q=80&auto=format&fit=crop",
+      imgAlt:"Woman from behind reading open poetry book cozy warm",
+      preview:"My grandmother's hands\nlive in mine now—",
+      full:`My grandmother's hands
+live in mine now—
+
+the same slight hesitation
+before kneading dough,
+the same way of smoothing cloth
+that needs no smoothing.
+
+I carry her without knowing.
+The gestures that come unbidden,
+the recipes tasted in muscle memory,
+the grief that knows her shape.
+
+We do not only inherit
+what we are told.
+We inherit what was lived
+beside us, long ago.` }
+  ];
+
+  const grid = document.getElementById('poems-grid');
+  poems.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'poem-card reveal';
+    card.innerHTML = `
+      <div class="poem-card-img-wrap">
+        <img class="poem-card-img" src="${p.img}" alt="${p.imgAlt}" loading="lazy" />
+      </div>
+      <div class="poem-card-body">
+        <p class="poem-number">No. ${p.num}</p>
+        <h3 class="poem-card-title">${p.title}</h3>
+        <p class="poem-card-author">${p.author}</p>
+        <p class="poem-preview">${p.preview.replace(/\n/g,'<br>')}</p>
+        <span class="poem-tag">${p.tag}</span>
+      </div>
+    `;
+    card.addEventListener('click', () => openModal(i));
+    grid.appendChild(card);
+  });
+
+  function openModal(i) {
+    const p = poems[i];
+    document.getElementById('modal-title').textContent = p.title;
+    document.getElementById('modal-author').textContent = '\u2014 ' + p.author;
+    document.getElementById('modal-poem').textContent = p.full;
+    document.getElementById('modal').classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+  function closeModal() {
+    document.getElementById('modal').classList.remove('active');
+    document.body.style.overflow = '';
+  }
+  function closeModalOutside(e) { if (e.target.id === 'modal') closeModal(); }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+        e.target.querySelectorAll && e.target.querySelectorAll('.poem-card').forEach((c, i) => {
+          c.style.transitionDelay = (i * 0.1) + 's';
+          c.classList.add('visible');
+        });
+      }
+    });
+  }, { threshold: 0.1 });
+  // Video: play only 30 seconds then pause
+  const vid = document.getElementById('flames-video');
+  if (vid) {
+    vid.addEventListener('timeupdate', () => {
+      if (vid.currentTime >= 30) { vid.currentTime = 0; }
+    });
+    vid.addEventListener('error', () => {
+      vid.closest('.video-featured').style.background = 'linear-gradient(135deg,#3D2B1F 0%,#7A3B1E 40%,#C4622D 100%)';
+    });
+  }
+
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
+</script>
+</body>
+</html>
