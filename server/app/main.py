@@ -1,14 +1,18 @@
+import os
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
+from app.config import settings
 from app.database import init_db
 from app.routers import poems, collections, analytics, admin, subscribers
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    os.makedirs(settings.upload_dir, exist_ok=True)
     await init_db()
     yield
 
@@ -30,6 +34,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.mount("/uploads", StaticFiles(directory=settings.upload_dir), name="uploads")
 
 app.include_router(poems.router, prefix="/api/poems", tags=["poems"])
 app.include_router(collections.router, prefix="/api/collections", tags=["collections"])

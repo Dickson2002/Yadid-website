@@ -11,6 +11,7 @@ class Settings(BaseSettings):
     admin_password: str = "vault-admin"
     admin_display_name: str = "Mbithe Jeddie"
     admin_email: str = "mbithejeddie@gmail.com"
+    upload_dir: str = "./uploads"
 
     model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
 

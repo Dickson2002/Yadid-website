@@ -1,4 +1,4 @@
-import { api } from './client'
+import { api, uploadFile } from './client'
 import type {
   PoemResponse,
   PoemCreatePayload,
@@ -44,4 +44,9 @@ export async function deletePoem(id: string): Promise<void> {
 
 export async function recordPoemView(slug: string): Promise<void> {
   return api.post<void>(`/poems/${slug}/view`, {})
+}
+
+export async function uploadPoemImage(file: File): Promise<string> {
+  const result = await uploadFile<{ filename: string }>('/admin/upload', file)
+  return result.filename
 }

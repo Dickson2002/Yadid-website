@@ -1,6 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+import os
+import uuid
+
+from fastapi import APIRouter, Depends, File, HTTPException, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_admin
 from app.models.admin import Admin
@@ -68,3 +72,32 @@ async def reset_archive(
 ):
     await auth_service.wipe_all_data(db)
     return {"ok": True}
+
+
+@router.post("/upload")
+async def upload_image(
+    file: UploadFile = File(...),
+    admin: Admin = Depends(get_current_admin),
+):
+    if file.content_type not in ("image/jpeg", "image/png", "image/webp"):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Only JPEG, PNG, and WebP images are allowed",
+        )
+
+    content = await file.read()
+    if len(content) > 1_000_000:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Image must be under 1MB",
+        )
+
+    ext = file.filename.rsplit(".", 1)[-1].lower() if file.filename else "jpg"
+    filename = f"{uuid.uuid4().hex}.{ext}"
+
+    os.makedirs(settings.upload_dir, exist_ok=True)
+    filepath = os.path.join(settings.upload_dir, filename)
+    with open(filepath, "wb") as f:
+        f.write(content)
+
+    return {"filename": filename}

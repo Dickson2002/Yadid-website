@@ -28,3 +28,5 @@ stitch/
 .vite/
 tsconfig.tsbuildinfo
 *.egg-info/
+server/uploads/*
+!server/uploads/.gitkeep

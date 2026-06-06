@@ -10,6 +10,7 @@ export interface PoemResponse {
   collection_id: string | null
   status: 'published' | 'draft'
   views: number
+  image: string | null
   created_at: string
   updated_at: string
 }
@@ -24,6 +25,7 @@ export interface PoemCreatePayload {
   tags?: string[]
   collection_id?: string | null
   status?: string
+  image?: string | null
 }
 
 export interface PoemUpdatePayload {
@@ -36,6 +38,7 @@ export interface PoemUpdatePayload {
   tags?: string[]
   collection_id?: string | null
   status?: string
+  image?: string | null
 }
 
 export interface CollectionCreatePayload {

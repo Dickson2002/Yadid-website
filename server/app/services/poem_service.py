@@ -1,12 +1,24 @@
 import json
+import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
 from sqlalchemy import select, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.models.poem import Poem, PoemStatus
 from app.models.poem_view import PoemView
+
+
+def _delete_image_file(filename: str | None) -> None:
+    if not filename:
+        return
+    path = os.path.join(settings.upload_dir, filename)
+    try:
+        os.remove(path)
+    except OSError:
+        pass
 
 
 def _tags_to_str(tags: list[str]) -> str:
@@ -33,6 +45,7 @@ def _poem_to_dict(poem: Poem) -> dict:
         "collection_id": str(poem.collection_id) if poem.collection_id else None,
         "status": poem.status.value,
         "views": poem.views,
+        "image": poem.image,
         "created_at": poem.created_at.isoformat(),
         "updated_at": poem.updated_at.isoformat(),
     }
@@ -124,6 +137,7 @@ async def create_poem(db: AsyncSession, data: dict) -> dict:
             uuid.UUID(data["collection_id"]) if data.get("collection_id") else None
         ),
         status=PoemStatus(data.get("status", "draft")),
+        image=data.get("image") or None,
     )
     db.add(poem)
     await db.commit()
@@ -140,15 +154,18 @@ async def update_poem(db: AsyncSession, poem_id: str, data: dict) -> dict | None
         return None
 
     for key, value in data.items():
-        if value is None:
-            continue
         if key == "tags":
             poem.tags = _tags_to_str(value)
         elif key == "collection_id":
             poem.collection_id = uuid.UUID(value) if value else None
         elif key == "status":
             poem.status = PoemStatus(value)
-        elif hasattr(poem, key):
+        elif key == "image":
+            old_image = poem.image
+            poem.image = value or None
+            if value and old_image and value != old_image:
+                _delete_image_file(old_image)
+        elif value is not None and hasattr(poem, key):
             setattr(poem, key, value)
 
     poem.updated_at = datetime.now(timezone.utc)
@@ -164,6 +181,7 @@ async def delete_poem(db: AsyncSession, poem_id: str) -> bool:
     poem = result.scalar_one_or_none()
     if poem is None:
         return False
+    _delete_image_file(poem.image)
     await db.delete(poem)
     await db.commit()
     return True

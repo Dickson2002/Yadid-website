@@ -1,9 +1,11 @@
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useCreatePoem, useUpdatePoem, useDeletePoem, usePoemById } from '@/hooks/use-poems'
 import { useCollections } from '@/hooks/use-collections'
 import { Button } from '@/components/ui/Button'
 import { Modal } from '@/components/shared/Modal'
+import { uploadPoemImage } from '@/lib/api/poems'
+import { UPLOADS_BASE_URL } from '@/lib/api/client'
 
 export function PoemEditorPage() {
   const { id } = useParams()
@@ -26,6 +28,10 @@ export function PoemEditorPage() {
   const [tagsStr, setTagsStr] = useState('')
   const [collectionId, setCollectionId] = useState<string>('')
   const [status, setStatus] = useState<'draft' | 'published'>('draft')
+  const [image, setImage] = useState<string | null>(null)
+  const [imageFile, setImageFile] = useState<File | null>(null)
+  const [imageUploading, setImageUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
 
@@ -41,6 +47,7 @@ export function PoemEditorPage() {
       setTagsStr((existingPoem.tags ?? []).join(', '))
       setCollectionId(existingPoem.collection_id ?? '')
       setStatus(existingPoem.status === 'published' ? 'published' : 'draft')
+      setImage(existingPoem.image ?? null)
     }
   }, [existingPoem])
 
@@ -61,6 +68,28 @@ export function PoemEditorPage() {
     [autoSlug],
   )
 
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type)) {
+      setError('Only JPEG, PNG, and WebP images are allowed.')
+      return
+    }
+    if (file.size > 1_000_000) {
+      setError('Image must be under 1MB.')
+      return
+    }
+    setImageFile(file)
+    setImage(URL.createObjectURL(file))
+    setError(null)
+  }
+
+  const handleRemoveImage = () => {
+    setImageFile(null)
+    setImage(null)
+    if (fileInputRef.current) fileInputRef.current.value = ''
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setError(null)
@@ -72,6 +101,19 @@ export function PoemEditorPage() {
     if (!slug.trim()) {
       setError('Slug is required')
       return
+    }
+
+    let imageName = image
+    if (imageFile) {
+      setImageUploading(true)
+      try {
+        imageName = await uploadPoemImage(imageFile)
+      } catch {
+        setError('Failed to upload image.')
+        setImageUploading(false)
+        return
+      }
+      setImageUploading(false)
     }
 
     const tags = tagsStr
@@ -89,6 +131,7 @@ export function PoemEditorPage() {
       tags,
       collection_id: collectionId || null,
       status,
+      image: imageName ?? null,
     }
 
     try {
@@ -103,7 +146,7 @@ export function PoemEditorPage() {
     }
   }
 
-  const isPending = createPoem.isPending || updatePoem.isPending || deletePoem.isPending
+  const isPending = createPoem.isPending || updatePoem.isPending || deletePoem.isPending || imageUploading
 
   if (isEdit && !existingPoem) {
     return (
@@ -230,6 +273,47 @@ export function PoemEditorPage() {
             />
           </div>
 
+          <div>
+            <label className="block font-label-sm text-label-sm text-text-secondary uppercase tracking-widest mb-2">
+              Card Image (optional)
+            </label>
+            <div
+              className="border-2 border-dashed border-border-subtle dark:border-dark-border p-8 text-center cursor-pointer hover:border-primary transition-colors"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={handleFileSelect}
+              />
+              {image ? (
+                <div className="relative inline-block">
+                  <img
+                    src={imageFile ? image : `${UPLOADS_BASE_URL}/uploads/${image}`}
+                    alt="Preview"
+                    className="max-h-48 object-contain mx-auto"
+                  />
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      handleRemoveImage()
+                    }}
+                    className="absolute -top-2 -right-2 w-6 h-6 bg-error text-white font-label-sm text-label-sm flex items-center justify-center hover:bg-error/80 transition-colors"
+                  >
+                    x
+                  </button>
+                </div>
+              ) : (
+                <p className="font-body-md text-body-md text-text-secondary">
+                  Click to upload an image (JPEG, PNG, or WebP, max 1MB)
+                </p>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
             <div>
               <label className="block font-label-sm text-label-sm text-text-secondary uppercase tracking-widest mb-2">
@@ -313,7 +397,7 @@ export function PoemEditorPage() {
             size="lg"
             disabled={isPending}
           >
-            {isPending ? 'Saving...' : (isEdit ? 'Update Poem' : 'Save Poem')}
+            {imageUploading ? 'Uploading image...' : (isPending ? 'Saving...' : (isEdit ? 'Update Poem' : 'Save Poem'))}
           </Button>
           <Button
             type="button"

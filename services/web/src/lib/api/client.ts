@@ -121,3 +121,35 @@ export const api = {
     request<T>(path, { method: 'PUT', body: JSON.stringify(body) }),
   delete: <T>(path: string) => request<T>(path, { method: 'DELETE' }),
 }
+
+export async function uploadFile<T>(
+  path: string,
+  file: File,
+): Promise<T> {
+  const authHeaders = getAuthHeaders()
+  const formData = new FormData()
+  formData.append('file', file)
+
+  const res = await fetch(`${BASE_URL}${path}`, {
+    method: 'POST',
+    headers: {
+      ...authHeaders,
+    },
+    body: formData,
+  })
+
+  if (!res.ok) {
+    let detail: unknown
+    try {
+      const body = await res.json()
+      detail = body.detail ?? body
+    } catch {
+      detail = `Upload failed: ${res.status}`
+    }
+    throw new ApiError(res.status, detail)
+  }
+
+  return res.json()
+}
+
+export const UPLOADS_BASE_URL = BASE_URL.replace('/api', '')

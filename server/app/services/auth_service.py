@@ -1,4 +1,5 @@
 import hashlib
+import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
@@ -9,6 +10,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.admin import Admin
+from app.models.poem import Poem
 from app.models.refresh_token import RefreshToken
 
 
@@ -126,11 +128,18 @@ async def rotate_refresh_token(
 
 async def wipe_all_data(db: AsyncSession) -> None:
     from sqlalchemy import delete as sa_delete
-    from app.models.poem import Poem
     from app.models.poem_view import PoemView
     from app.models.collection import Collection
     from app.models.activity import ActivityLog
     from app.models.subscriber import Subscriber
+
+    result = await db.execute(select(Poem).where(Poem.image.isnot(None)))
+    for poem in result.scalars().all():
+        filepath = os.path.join(settings.upload_dir, poem.image)
+        try:
+            os.remove(filepath)
+        except OSError:
+            pass
 
     for model in [PoemView, Poem, Collection, ActivityLog, Subscriber]:
         await db.execute(sa_delete(model))

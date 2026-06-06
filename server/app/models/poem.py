@@ -27,6 +27,7 @@ class Poem(Base):
     date: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, default=lambda: datetime.now(timezone.utc)
     )
+    image: Mapped[str | None] = mapped_column(String(512), nullable=True, default=None)
     tags: Mapped[str] = mapped_column(Text, nullable=False, default="[]")
     collection_id: Mapped[uuid.UUID | None] = mapped_column(
         Uuid, ForeignKey("collections.id", ondelete="SET NULL"), nullable=True

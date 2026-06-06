@@ -14,6 +14,7 @@ class PoemBase(BaseModel):
     tags: list[str] = []
     collection_id: UUID | None = None
     status: str = "draft"
+    image: str | None = None
 
 
 class PoemCreate(PoemBase):
@@ -30,6 +31,7 @@ class PoemUpdate(BaseModel):
     tags: list[str] | None = None
     collection_id: UUID | None = None
     status: str | None = None
+    image: str | None = None
 
 
 class PoemResponse(PoemBase):
