@@ -1,0 +1,30 @@
+# Secrets
+server/.env
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+htmlcov/
+venv/
+server/test.db
+
+# Node
+node_modules/
+dist/
+build/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Project-specific
+stitch/
+.vite/
+tsconfig.tsbuildinfo
+*.egg-info/
