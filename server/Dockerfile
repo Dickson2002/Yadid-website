@@ -2,9 +2,11 @@ FROM python:3.12-slim
 
 WORKDIR /app
 
-COPY . .
+COPY pyproject.toml .
+RUN pip install --no-cache-dir --only-binary :all: .
 
-RUN pip install --no-cache-dir --prefer-binary .
+COPY . .
+RUN pip install --no-cache-dir --only-binary :all: --no-deps .
 
 EXPOSE 8000
 
