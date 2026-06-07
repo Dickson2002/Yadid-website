@@ -5,9 +5,15 @@ from app.database import get_db
 from app.dependencies import get_current_admin
 from app.models.admin import Admin
 from app.schemas.poem import PoemCreate, PoemUpdate, PoemResponse
+from app.schemas.analytics import PublicStats
 from app.services import poem_service
 
 router = APIRouter()
+
+
+@router.get("/stats", response_model=PublicStats)
+async def public_stats(db: AsyncSession = Depends(get_db)):
+    return await poem_service.get_public_stats(db)
 
 
 @router.get("", response_model=list[PoemResponse])

@@ -1,7 +1,25 @@
+import { useQuery } from '@tanstack/react-query'
 import { PublicLayout } from './PublicLayout'
 import { ScrollReveal } from '@/components/shared/ScrollReveal'
+import { api } from '@/lib/api/client'
+
+interface PublicStats {
+  poems: number
+  collections: number
+  views: number
+}
+
+function formatCount(n: number): string {
+  if (n >= 1000) return (n / 1000).toFixed(1).replace(/\.0$/, '') + 'k'
+  return String(n)
+}
 
 export function AboutPage() {
+  const { data: stats } = useQuery<PublicStats>({
+    queryKey: ['public-stats'],
+    queryFn: () => api.get<PublicStats>('/poems/stats'),
+  })
+
   return (
     <PublicLayout>
       <section className="py-16 md:py-section-gap">
@@ -9,7 +27,7 @@ export function AboutPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-gutter min-h-[70vh]">
             <ScrollReveal>
               <div className="bg-primary p-8 md:p-16 flex flex-col justify-center relative overflow-hidden">
-                <div className="absolute top-0 left-0 w-full h-full opacity-[0.06] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzR2LTRoLTJ2NGgtNHYyaDR2NGgydi00aDR2LTJoLTR6bTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9nPjwvc3ZnPg==')]" />
+                <div className="absolute top-0 left-0 w-full h-full opacity-[0.06] pointer-events-none bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNjAiIGhlaWdodD0iNjAiIHZpZXdCb3g9IjAgMCA2MCA2MCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZyBmaWxsPSJub25lIiBmaWxsLXJ1bGU9ImV2ZW5vZGQiPjxnIGZpbGw9IiNmZmYiIGZpbGwtb3BhY2l0eT0iMC4xIj48cGF0aCBkPSJNMzYgMzR2LTRoLTJ2NGgtNHYyaDR2NGgydi00aDR2LTJoLTR6bTAtMzBWMGgtMnY0aC00djJoNHY0aDJWNmg0VjRoLTR6TTYgMzR2LTRINHY0SDB2Mmg0djRoMnYtNGg0di0ySDZ6TTYgNFYwSDR2NEgwdjJoNHY0aDJWNmg0VjRINnoiLz48L2c+PC9zdmc+')]" />
                 <p className="font-label-sm text-label-sm text-on-primary/70 uppercase tracking-[0.35em] mb-6 relative z-10">
                   The Vault
                 </p>
@@ -32,7 +50,7 @@ export function AboutPage() {
                 <div className="grid grid-cols-2 gap-6 md:gap-8 mb-8 md:mb-12">
                   <div>
                     <p className="font-display-xl text-display-xl-mobile text-primary leading-none mb-2">
-                      12
+                      {stats ? formatCount(stats.poems) : '—'}
                     </p>
                     <p className="text-[10px] md:text-label-sm text-text-secondary uppercase tracking-widest">
                       Poems Published
@@ -40,7 +58,7 @@ export function AboutPage() {
                   </div>
                   <div>
                     <p className="font-display-xl text-display-xl-mobile text-primary leading-none mb-2">
-                      2
+                      {stats ? stats.collections : '—'}
                     </p>
                     <p className="text-[10px] md:text-label-sm text-text-secondary uppercase tracking-widest">
                       Collections
@@ -48,7 +66,7 @@ export function AboutPage() {
                   </div>
                   <div>
                     <p className="font-display-xl text-display-xl-mobile text-primary leading-none mb-2">
-                      12.4k
+                      {stats ? formatCount(stats.views) : '—'}
                     </p>
                     <p className="text-[10px] md:text-label-sm text-text-secondary uppercase tracking-widest">
                       Total Reads

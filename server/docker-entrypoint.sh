@@ -2,7 +2,7 @@
 set -e
 
 echo "Running database seed..."
-vault-seed
+python -m app.seed
 
 echo "Starting server..."
 exec "$@"

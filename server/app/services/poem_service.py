@@ -3,12 +3,13 @@ import os
 import uuid
 from datetime import datetime, timedelta, timezone
 
-from sqlalchemy import select, delete
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
 from app.models.poem import Poem, PoemStatus
 from app.models.poem_view import PoemView
+from app.models.collection import Collection
 
 
 def _delete_image_file(filename: str | None) -> None:
@@ -48,6 +49,19 @@ def _poem_to_dict(poem: Poem) -> dict:
         "image": poem.image,
         "created_at": poem.created_at.isoformat(),
         "updated_at": poem.updated_at.isoformat(),
+    }
+
+
+async def get_public_stats(db: AsyncSession) -> dict:
+    poems = await db.scalar(
+        select(func.count(Poem.id)).where(Poem.status == PoemStatus.published)
+    )
+    collections = await db.scalar(select(func.count(Collection.id)))
+    views = await db.scalar(select(func.coalesce(func.sum(Poem.views), 0)))
+    return {
+        "poems": poems or 0,
+        "collections": collections or 0,
+        "views": views or 0,
     }
 
 

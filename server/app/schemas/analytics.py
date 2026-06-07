@@ -30,4 +30,10 @@ class MonthlyGrowth(BaseModel):
     count: int
 
 
+class PublicStats(BaseModel):
+    poems: int = 0
+    collections: int = 0
+    views: int = 0
+
+
 
