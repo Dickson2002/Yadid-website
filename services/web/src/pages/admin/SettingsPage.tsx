@@ -1,13 +1,26 @@
 import { useState } from 'react'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { useNavigate } from 'react-router-dom'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import { Modal } from '@/components/shared/Modal'
-import { resetAllData } from '@/lib/api/admin'
+import { getAdminProfile, resetAllData, updateSettings } from '@/lib/api/admin'
+import { useAuthStore } from '@/lib/auth-store'
 
 export function SettingsPage() {
   const [showConfirm, setShowConfirm] = useState(false)
+  const [newUsername, setNewUsername] = useState('')
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
+
+  const { data: admin, isLoading: profileLoading } = useQuery({
+    queryKey: ['admin-profile'],
+    queryFn: getAdminProfile,
+  })
 
   const resetMutation = useMutation({
     mutationFn: resetAllData,
@@ -16,6 +29,52 @@ export function SettingsPage() {
       setShowConfirm(false)
     },
   })
+
+  const settingsMutation = useMutation({
+    mutationFn: updateSettings,
+    onSuccess: (_, vars) => {
+      setCurrentPassword('')
+      setNewPassword('')
+      setConfirmPassword('')
+      setNewUsername('')
+      setError('')
+      if (vars.password) {
+        useAuthStore.getState().logout()
+        navigate('/admin')
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['admin-profile'] })
+      }
+    },
+    onError: (err: Error) => {
+      setError(err.message)
+    },
+  })
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault()
+    setError('')
+
+    if (!currentPassword) {
+      setError('Current password is required')
+      return
+    }
+    if (newPassword && newPassword !== confirmPassword) {
+      setError('New passwords do not match')
+      return
+    }
+    if (newPassword && newPassword.length < 8) {
+      setError('New password must be at least 8 characters')
+      return
+    }
+
+    settingsMutation.mutate({
+      current_password: currentPassword,
+      ...(newUsername ? { username: newUsername } : {}),
+      ...(newPassword ? { password: newPassword } : {}),
+    })
+  }
+
+  if (profileLoading) return null
 
   return (
     <div className="space-y-8 max-w-2xl">
@@ -28,39 +87,80 @@ export function SettingsPage() {
         </p>
       </div>
 
-      <div className="bg-surface-card dark:bg-dark-surface border border-border-subtle dark:border-dark-border p-6 md:p-8 space-y-8">
+      <form
+        onSubmit={handleSubmit}
+        className="bg-surface-card dark:bg-dark-surface border border-border-subtle dark:border-dark-border p-6 md:p-8 space-y-8"
+      >
         <h3 className="font-headline-md text-headline-md text-primary dark:text-primary-fixed">
-          Profile
+          Credentials
         </h3>
 
         <div className="space-y-6">
           <Input
-            id="display-name"
-            label="DISPLAY NAME"
-            defaultValue="Mbithe Jeddie"
+            id="current-username"
+            label="USERNAME"
+            defaultValue={admin?.username}
+            disabled
           />
           <Input
-            id="email"
-            label="EMAIL ADDRESS"
-            type="email"
-            defaultValue="mbithejeddie@gmail.com"
+            id="new-username"
+            label="NEW USERNAME (optional)"
+            value={newUsername}
+            onChange={(e) => setNewUsername(e.target.value)}
+            placeholder="Leave blank to keep current"
           />
-          <div>
-            <label className="block font-label-sm text-label-sm text-primary mb-2">
-              BIO
-            </label>
-            <textarea
-              className="w-full bg-transparent border border-border-subtle dark:border-dark-border focus:border-primary outline-none p-4 font-body-md text-body-md transition-colors dark:text-dark-text-primary resize-none"
-              rows={4}
-              defaultValue="Poet and writer based in Nairobi, Kenya. Her work explores memory, identity, tenderness, and the spaces between words."
+          <Input
+            id="current-password"
+            label="CURRENT PASSWORD"
+            type="password"
+            value={currentPassword}
+            onChange={(e) => setCurrentPassword(e.target.value)}
+            required
+          />
+          <Input
+            id="new-password"
+            label="NEW PASSWORD (optional)"
+            type="password"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            placeholder="Leave blank to keep current"
+          />
+          {newPassword && (
+            <Input
+              id="confirm-password"
+              label="CONFIRM NEW PASSWORD"
+              type="password"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              error={
+                confirmPassword && newPassword !== confirmPassword
+                  ? 'Passwords do not match'
+                  : undefined
+              }
             />
-          </div>
+          )}
         </div>
 
+        {error && (
+          <p className="font-label-sm text-label-sm text-status-danger">{error}</p>
+        )}
+
+        {settingsMutation.isSuccess && !settingsMutation.variables?.password && (
+          <p className="font-label-sm text-label-sm text-green-600">
+            Settings saved successfully.
+          </p>
+        )}
+
         <div className="pt-4 border-t border-border-subtle dark:border-dark-border">
-          <Button variant="primary">Save Changes</Button>
+          <Button
+            variant="primary"
+            type="submit"
+            disabled={settingsMutation.isPending}
+          >
+            {settingsMutation.isPending ? 'Saving...' : 'Save Changes'}
+          </Button>
         </div>
-      </div>
+      </form>
 
       <div className="bg-surface-card dark:bg-dark-surface border border-border-subtle dark:border-dark-border p-6 md:p-8 space-y-8">
         <h3 className="font-headline-md text-headline-md text-status-danger">

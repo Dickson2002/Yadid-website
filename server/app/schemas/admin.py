@@ -19,6 +19,12 @@ class RefreshRequest(BaseModel):
     refresh_token: str
 
 
+class UpdateAdminRequest(BaseModel):
+    current_password: str = Field(..., max_length=255)
+    username: str | None = Field(None, max_length=100)
+    password: str | None = Field(None, max_length=255)
+
+
 class AdminResponse(BaseModel):
     id: UUID
     username: str

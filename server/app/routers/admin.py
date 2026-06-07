@@ -8,7 +8,13 @@ from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_admin
 from app.models.admin import Admin
-from app.schemas.admin import LoginRequest, TokenResponse, RefreshRequest, AdminResponse
+from app.schemas.admin import (
+    LoginRequest,
+    TokenResponse,
+    RefreshRequest,
+    AdminResponse,
+    UpdateAdminRequest,
+)
 from app.services import auth_service
 
 router = APIRouter()
@@ -63,6 +69,21 @@ async def get_me(
     admin: Admin = Depends(get_current_admin),
 ):
     return admin
+
+
+@router.put("/settings", response_model=AdminResponse)
+async def update_settings(
+    data: UpdateAdminRequest,
+    db: AsyncSession = Depends(get_db),
+    admin: Admin = Depends(get_current_admin),
+):
+    try:
+        result = await auth_service.update_admin_settings(
+            db, admin, data.model_dump(exclude_none=True)
+        )
+    except ValueError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+    return result
 
 
 @router.post("/reset")

@@ -5,7 +5,7 @@ from datetime import datetime, timedelta, timezone
 
 import bcrypt
 from jose import jwt
-from sqlalchemy import select
+from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.config import settings
@@ -124,6 +124,31 @@ async def rotate_refresh_token(
     await db.commit()
 
     return new_access, new_refresh, admin_id
+
+
+async def update_admin_settings(db: AsyncSession, admin: Admin, data: dict) -> dict:
+    if not verify_password(data["current_password"], admin.hashed_password):
+        raise ValueError("Current password is incorrect")
+
+    if data.get("username"):
+        admin.username = data["username"]
+    if data.get("password"):
+        admin.hashed_password = hash_password(data["password"])
+        await db.execute(
+            update(RefreshToken)
+            .where(RefreshToken.admin_id == admin.id)
+            .values(revoked=True)
+        )
+
+    await db.commit()
+    await db.refresh(admin)
+    return {
+        "id": str(admin.id),
+        "username": admin.username,
+        "display_name": admin.display_name,
+        "email": admin.email,
+        "created_at": admin.created_at.isoformat(),
+    }
 
 
 async def wipe_all_data(db: AsyncSession) -> None:

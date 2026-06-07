@@ -119,4 +119,10 @@ export interface ResetResponse {
   ok: boolean
 }
 
+export interface UpdateAdminPayload {
+  current_password: string
+  username?: string
+  password?: string
+}
+
 
