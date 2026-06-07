@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react'
+import { cn } from '@/lib/cn'
 import { useNavigate, useParams } from 'react-router-dom'
 import { useCreatePoem, useUpdatePoem, useDeletePoem, usePoemById } from '@/hooks/use-poems'
 import { useCollections } from '@/hooks/use-collections'
@@ -31,6 +32,7 @@ export function PoemEditorPage() {
   const [image, setImage] = useState<string | null>(null)
   const [imageFile, setImageFile] = useState<File | null>(null)
   const [imageUploading, setImageUploading] = useState(false)
+  const [imageError, setImageError] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
   const [error, setError] = useState<string | null>(null)
   const [showDiscardDialog, setShowDiscardDialog] = useState(false)
@@ -80,13 +82,17 @@ export function PoemEditorPage() {
       return
     }
     setImageFile(file)
-    setImage(URL.createObjectURL(file))
+    setImageError(false)
+    const reader = new FileReader()
+    reader.onload = () => setImage(reader.result as string)
+    reader.readAsDataURL(file)
     setError(null)
   }
 
   const handleRemoveImage = () => {
     setImageFile(null)
     setImage(null)
+    setImageError(false)
     if (fileInputRef.current) fileInputRef.current.value = ''
   }
 
@@ -293,15 +299,28 @@ export function PoemEditorPage() {
                   <img
                     src={imageFile ? image : `${UPLOADS_BASE_URL}/uploads/${image}`}
                     alt="Preview"
-                    className="max-h-48 object-contain mx-auto"
+                    className={cn(
+                      'max-h-48 mx-auto',
+                      imageError ? 'hidden' : 'object-contain',
+                    )}
+                    onError={() => setImageError(true)}
+                    onLoad={() => setImageError(false)}
                   />
+                  {imageError && (
+                    <p className="font-body-md text-body-md text-status-danger py-8">
+                      Image failed to load. The file may have been deleted or the server may have been restarted.
+                    </p>
+                  )}
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation()
                       handleRemoveImage()
                     }}
-                    className="absolute -top-2 -right-2 w-6 h-6 bg-error text-white font-label-sm text-label-sm flex items-center justify-center hover:bg-error/80 transition-colors"
+                    className={cn(
+                      'w-6 h-6 bg-error text-white font-label-sm text-label-sm flex items-center justify-center hover:bg-error/80 transition-colors',
+                      imageError ? 'relative mx-auto mt-2' : 'absolute -top-2 -right-2',
+                    )}
                   >
                     x
                   </button>
