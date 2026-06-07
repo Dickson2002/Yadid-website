@@ -24,7 +24,7 @@ export function PoemEditorPage() {
   const [author, setAuthor] = useState('Mbithe Jeddie')
   const [excerpt, setExcerpt] = useState('')
   const [content, setContent] = useState('')
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0])
+  const [date, setDate] = useState(new Date().toISOString().split('T')[0] + 'T00:00:00+00:00')
   const [tagsStr, setTagsStr] = useState('')
   const [collectionId, setCollectionId] = useState<string>('')
   const [status, setStatus] = useState<'draft' | 'published'>('draft')

@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { UPLOADS_BASE_URL } from '@/lib/api/client'
 import type { PoemResponse } from '@/lib/api/types'
@@ -9,7 +10,8 @@ interface PoemCardProps {
 
 export function PoemCard({ poem, index = 0 }: PoemCardProps) {
   const navigate = useNavigate()
-  const hasImage = !!poem.image
+  const [imgError, setImgError] = useState(false)
+  const hasImage = !!poem.image && !imgError
 
   return (
     <div
@@ -18,9 +20,11 @@ export function PoemCard({ poem, index = 0 }: PoemCardProps) {
       style={{ transitionDelay: `${index * 100}ms` }}
     >
       {hasImage ? (
-        <div
-          className="absolute inset-0 bg-cover bg-center"
-          style={{ backgroundImage: `url(${UPLOADS_BASE_URL}/uploads/${poem.image})` }}
+        <img
+          src={`${UPLOADS_BASE_URL}/uploads/${poem.image}`}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          onError={() => setImgError(true)}
         />
       ) : null}
 

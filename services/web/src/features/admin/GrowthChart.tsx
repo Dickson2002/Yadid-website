@@ -1,8 +1,15 @@
+import { useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { fetchMonthlyGrowth } from '@/lib/api/analytics'
 import { Select } from '@/components/ui/Select'
 
+const VIEW_OPTIONS = [
+  { value: 'monthly', label: 'Monthly View' },
+  { value: 'weekly', label: 'Weekly View' },
+]
+
 export function GrowthChart() {
+  const [view, setView] = useState('monthly')
   const { data: growth } = useQuery({
     queryKey: ['monthly-growth'],
     queryFn: fetchMonthlyGrowth,
@@ -16,17 +23,18 @@ export function GrowthChart() {
     <div className="bg-surface-card dark:bg-dark-surface border border-border-subtle dark:border-dark-border p-8">
       <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4 mb-10">
         <div>
-          <h3 className="font-headline-md text-headline-md">
+          <h3 className="font-headline-md text-headline-md text-text-primary dark:text-dark-text-primary">
             Publication Growth
           </h3>
           <p className="font-label-sm text-label-sm text-text-secondary uppercase tracking-widest">
             Last 6 Months
           </p>
         </div>
-        <Select>
-          <option>Monthly View</option>
-          <option>Weekly View</option>
-        </Select>
+        <Select
+          value={view}
+          onChange={setView}
+          options={VIEW_OPTIONS}
+        />
       </div>
 
       <div className="relative h-[200px] sm:h-[300px] w-full mt-8 flex items-end justify-between overflow-hidden">
