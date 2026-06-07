@@ -1,6 +1,6 @@
 import { useAuthStore } from '@/lib/auth-store'
 
-const BASE_URL = import.meta.env.VITE_API_URL ?? 'http://localhost:8000/api'
+const BASE_URL = 'https://api.jedidahmunyaka.com/api'
 
 let refreshPromise: Promise<boolean> | null = null
 
