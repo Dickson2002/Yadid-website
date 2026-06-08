@@ -25,6 +25,9 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(
             'w-full bg-transparent border-b border-border-subtle dark:border-dark-border',
             'focus:border-primary outline-none py-2 font-body-md text-body-md',
             'placeholder:text-text-secondary/50 dark:text-dark-text-primary transition-colors',
+            'autofill:!bg-[#1C1E1A] autofill:!text-dark-text-primary',
+            '[-webkit-autofill]:!bg-[#1C1E1A] [-webkit-autofill]:!text-dark-text-primary',
+            '[-webkit-autofill]:shadow-[inset_0_0_0_1000px_#1C1E1A]',
             error && 'border-status-danger',
             className,
           )}
