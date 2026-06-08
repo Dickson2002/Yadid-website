@@ -152,4 +152,4 @@ export async function uploadFile<T>(
   return res.json()
 }
 
-export const UPLOADS_BASE_URL = BASE_URL.replace('/api', '')
+export const UPLOADS_BASE_URL = 'https://api.jedidahmunyaka.com'
